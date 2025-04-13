@@ -27,9 +27,12 @@ export const useAuthStore = defineStore('auth', {
         // 로그인 성공 시 기본 사용자 정보만 저장
         this.player = {
             nickname: nickname,
+            id: response.data
             // 필요한 최소한의 정보만 저장
         };
         localStorage.setItem('player', JSON.stringify(this.player));
+
+        console.log("오류 확인: ", this.player)
 
 
         // // 로그인 성공 시 플레이어 정보 조회

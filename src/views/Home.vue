@@ -191,6 +191,7 @@ export default {
         const success = await authStore.login(loginForm.nickname, loginForm.password);
         
         if (success) {
+          await authStore.fetchPlayerDetail()
           router.push('/dashboard');
         }
       } catch (error) {
