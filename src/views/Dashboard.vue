@@ -86,22 +86,6 @@
                 </div>
               </li>
             </ul>
-
-            <!-- 주식 추가 폼 -->
-            <div class="add-stock-form">
-              <div class="add-stock-title">
-                <span class="add-stock-icon">✨</span>새 주식 추가
-              </div>
-              <form id="add-stock-form" class="form-inline" @submit.prevent="createStock">
-                <div class="form-group">
-                  <input type="text" v-model="newStock.name" class="form-input" placeholder="주식명" required>
-                </div>
-                <div class="form-group">
-                  <input type="number" v-model="newStock.price" class="form-input" min="1" placeholder="초기 가격" required>
-                </div>
-                <button type="submit" class="btn btn-primary">추가</button>
-              </form>
-            </div>
           </template>
         </div>
       </div>
@@ -498,7 +482,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 .content {}
 
@@ -868,30 +851,6 @@ export default {
 
 .btn-outline:hover {
   background-color: var(--background-gray);
-}
-
-.add-stock-form {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px dashed var(--border-color);
-}
-
-.add-stock-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.add-stock-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.form-inline {
-  display: flex;
-  gap: 12px;
 }
 
 .form-group {
