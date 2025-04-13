@@ -14,7 +14,7 @@
         </div>
         <div class="card-body">
           <div v-if="loading.playerStocks" class="empty-state">
-            <div class="empty-icon">🔄</div>
+            <div class="spinner-border text-primary" role="status"></div>
             <div class="empty-text">로딩 중...</div>
           </div>
           <template v-else>
@@ -58,7 +58,7 @@
         </div>
         <div class="card-body">
           <div v-if="loading.stocks" class="empty-state">
-            <div class="empty-icon">🔄</div>
+            <div class="spinner-border text-primary" role="status"></div>
             <div class="empty-text">로딩 중...</div>
           </div>
           <template v-else>
@@ -99,7 +99,7 @@
         </div>
         <div class="card-body">
           <div v-if="loading.history" class="empty-state">
-            <div class="empty-icon">🔄</div>
+            <div class="spinner-border text-primary" role="status"></div>
             <div class="empty-text">로딩 중...</div>
           </div>
           <template v-else>
