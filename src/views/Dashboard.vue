@@ -1,366 +1,360 @@
 <template>
-    <div class="content">
-      <div class="balance-card">
-        <div class="balance-label">총 보유자산</div>
-        <div class="balance-amount" id="player-money">{{ totalAssetFormatted }}원</div>
-      </div>
-      
-      <div class="content-grid">
-        <!-- 보유 주식 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">보유 주식</h2>
-            <router-link to="/portfolio" class="view-all">전체보기</router-link>
-          </div>
-          <div class="card-body">
-            <div v-if="loading.playerStocks" class="empty-state">
-              <div class="empty-icon">🔄</div>
-              <div class="empty-text">로딩 중...</div>
-            </div>
-            <template v-else>
-              <div v-if="playerStocks.length === 0" class="empty-state">
-                <div class="empty-icon">
-                  <i class="bi bi-bar-chart"></i>
-                </div>
-                <h2 class="card-title">보유 중인 주식이 없습니다</h2>
-                <p class="empty-description">주식 시장에서 주식을 구매해보세요</p>
-                <router-link to="/markets" class="btn btn-primary">주식 구매하기</router-link>
-              </div>
-              <ul v-else class="stock-list">
-                <li v-for="stock in playerStocks.slice(0, 5)" :key="stock.stockId" class="stock-item">
-                  <div class="stock-info">
-                    <div class="stock-logo">{{ stock.stockName.charAt(0) }}</div>
-                    <div class="stock-details">
-                      <div class="stock-name">{{ stock.stockName }}</div>
-                      <div class="stock-quantity">{{ stock.stockQuantity }}주</div>
-                    </div>
-                  </div>
-                  <div class="stock-price">
-                    <div class="stock-price-value">{{ formatMoney(stock.stockPrice * stock.stockQuantity) }}원</div>
-                    <div class="stock-change" :class="getProfitClass(stock.profitRate)">
-                      {{ formatProfitRate(stock.profitRate) }}
-                    </div>
-                  </div>
-                  <div class="stock-actions">
-                    <button class="btn btn-sm btn-primary" @click="openSellModal(stock)">판매</button>
-                  </div>
-                </li>
-              </ul>
-            </template>
-          </div>
+  <div class="content">
+    <div class="balance-card">
+      <div class="balance-label">총 보유자산</div>
+      <div class="balance-amount" id="player-money">{{ totalAssetFormatted }}원</div>
+    </div>
+
+    <div class="content-grid">
+      <!-- 보유 주식 카드 -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">보유 주식</h2>
+          <router-link to="/portfolio" class="view-all">전체보기</router-link>
         </div>
-        
-        <!-- 주식 시장 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">주식 시장</h2>
-            <router-link to="/markets" class="view-all">전체보기</router-link>
+        <div class="card-body">
+          <div v-if="loading.playerStocks" class="empty-state">
+            <div class="empty-icon">🔄</div>
+            <div class="empty-text">로딩 중...</div>
           </div>
-          <div class="card-body">
-            <div v-if="loading.stocks" class="empty-state">
-              <div class="empty-icon">🔄</div>
-              <div class="empty-text">로딩 중...</div>
+          <template v-else>
+            <div v-if="playerStocks.length === 0" class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-bar-chart"></i>
+              </div>
+              <h2 class="card-title">보유 중인 주식이 없습니다</h2>
+              <p class="empty-description">주식 시장에서 주식을 구매해보세요</p>
+              <router-link to="/markets" class="btn btn-primary">주식 구매하기</router-link>
             </div>
-            <template v-else>
-              <div v-if="stocks.length === 0" class="empty-state">
-                <div class="empty-icon">
-                  <i class="bi bi-graph-up"></i>
+            <ul v-else class="stock-list">
+              <li v-for="stock in playerStocks.slice(0, 5)" :key="stock.stockId" class="stock-item">
+                <div class="stock-info">
+                  <div class="stock-logo">{{ stock.stockName.charAt(0) }}</div>
+                  <div class="stock-details">
+                    <div class="stock-name">{{ stock.stockName }}</div>
+                    <div class="stock-quantity">{{ stock.stockQuantity }}주</div>
+                  </div>
                 </div>
-                <h3 class="card-title">시장에 주식이 없습니다</h3>
-                <p class="empty-description">새로운 주식을 등록해보세요</p>
-                <button class="btn btn-primary" @click="openCreateStockModal">주식 등록하기</button>
-              </div>
-              <ul v-else class="stock-list">
-                <li v-for="stock in stocks.slice(0, 5)" :key="stock.id" class="stock-item">
-                  <div class="stock-info">
-                    <div class="stock-logo">{{ stock.stockName.charAt(0) }}</div>
-                    <div class="stock-details">
-                      <div class="stock-name">{{ stock.stockName }}</div>
-                    </div>
+                <div class="stock-price">
+                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice * stock.stockQuantity) }}원</div>
+                  <div class="stock-change" :class="getProfitClass(stock.profitRate)">
+                    {{ formatProfitRate(stock.profitRate) }}
                   </div>
-                  <div class="stock-price">
-                    <div class="stock-price-value">{{ formatMoney(stock.stockPrice) }}원</div>
-                  </div>
-                  <div class="stock-actions">
-                    <button class="btn btn-sm btn-primary" @click="openBuyModal(stock)">구매</button>
-                  </div>
-                </li>
-              </ul>
-              
-              <!-- 주식 추가 폼 -->
-              <div class="add-stock-form">
-                <div class="add-stock-title">
-                  <span class="add-stock-icon">✨</span>새 주식 추가
                 </div>
-                <form id="add-stock-form" class="form-inline" @submit.prevent="createStock">
-                  <div class="form-group">
-                    <input type="text" v-model="newStock.name" class="form-input" placeholder="주식명" required>
-                  </div>
-                  <div class="form-group">
-                    <input type="number" v-model="newStock.price" class="form-input" min="1" placeholder="초기 가격" required>
-                  </div>
-                  <button type="submit" class="btn btn-primary">추가</button>
-                </form>
-              </div>
-            </template>
-          </div>
-        </div>
-        
-        <!-- 최근 거래 내역 카드 -->
-        <div class="card card-full">
-          <div class="card-header">
-            <h2 class="card-title">거래 내역</h2>
-            <router-link to="/history" class="view-all">전체보기</router-link>
-          </div>
-          <div class="card-body">
-            <div v-if="loading.history" class="empty-state">
-              <div class="empty-icon">🔄</div>
-              <div class="empty-text">로딩 중...</div>
-            </div>
-            <template v-else>
-              <div v-if="stockHistories.length === 0" class="empty-state">
-                <div class="empty-icon">
-                  <i class="bi bi-clock-history"></i>
+                <div class="stock-actions">
+                  <button class="btn btn-sm btn-primary" @click="openSellModal(stock)">판매</button>
                 </div>
-                <h3 class="card-title">거래 내역이 없습니다</h3>
-                <p class="empty-description">첫 주식 거래를 시작해보세요</p>
-                <router-link to="/markets" class="btn btn-primary">주식 구매하기</router-link>
-              </div>
-              <ul v-else class="transaction-list">
-                <li v-for="(history, index) in stockHistories.slice(0, 5)" :key="index" class="transaction-item">
-                  <div class="transaction-info">
-                    <div class="transaction-icon" :class="getTransactionIconClass(history.transactionType)">
-                      {{ history.transactionType === '매수' ? '↓' : '↑' }}
-                    </div>
-                    <div class="transaction-details">
-                      <div class="transaction-title">
-                        {{ history.stockName }}
-                        <span class="transaction-tag" :class="getTransactionTagClass(history.transactionType)">
-                          {{ history.transactionType }}
-                        </span>
-                      </div>
-                      <div class="transaction-date">
-                        {{ formatDateTime(history.timestamp) }} • {{ history.quantity }}주
-                      </div>
-                    </div>
-                  </div>
-                  <div class="transaction-amount" :class="getTransactionAmountClass(history.transactionType)">
-                    {{ getTransactionPrefix(history.transactionType) }}{{ formatMoney(history.totalAmount) }}원
-                  </div>
-                </li>
-              </ul>
-            </template>
-          </div>
+              </li>
+            </ul>
+          </template>
         </div>
       </div>
-      
-      <!-- 주식 구매 모달 -->
-      <div id="buy-modal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">주식 구매</h3>
-            <button type="button" class="modal-close" @click="closeBuyModal">&times;</button>
+
+      <!-- 주식 시장 카드 -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">주식 시장</h2>
+          <router-link to="/markets" class="view-all">전체보기</router-link>
+        </div>
+        <div class="card-body">
+          <div v-if="loading.stocks" class="empty-state">
+            <div class="empty-icon">🔄</div>
+            <div class="empty-text">로딩 중...</div>
           </div>
-          <div class="modal-body">
-            <div v-if="selectedStock" class="modal-summary">
-              <div class="summary-item">
-                <span class="summary-label">주식명</span>
-                <span class="summary-value">{{ selectedStock.stockName }}</span>
+          <template v-else>
+            <div v-if="stocks.length === 0" class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-graph-up"></i>
               </div>
-              <div class="summary-item">
-                <span class="summary-label">현재 가격</span>
-                <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}원</span>
+              <h3 class="card-title">시장에 주식이 없습니다</h3>
+              <p class="empty-description">새로운 주식을 등록해보세요</p>
+              <button class="btn btn-primary" @click="openCreateStockModal">주식 등록하기</button>
+            </div>
+            <ul v-else class="stock-list">
+              <li v-for="stock in stocks.slice(0, 5)" :key="stock.id" class="stock-item">
+                <div class="stock-info">
+                  <div class="stock-logo">{{ stock.stockName.charAt(0) }}</div>
+                  <div class="stock-details">
+                    <div class="stock-name">{{ stock.stockName }}</div>
+                  </div>
+                </div>
+                <div class="stock-price">
+                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice) }}원</div>
+                </div>
+                <div class="stock-actions">
+                  <button class="btn btn-sm btn-primary" @click="openBuyModal(stock)">구매</button>
+                </div>
+              </li>
+            </ul>
+
+            <!-- 주식 추가 폼 -->
+            <div class="add-stock-form">
+              <div class="add-stock-title">
+                <span class="add-stock-icon">✨</span>새 주식 추가
               </div>
+              <form id="add-stock-form" class="form-inline" @submit.prevent="createStock">
+                <div class="form-group">
+                  <input type="text" v-model="newStock.name" class="form-input" placeholder="주식명" required>
+                </div>
+                <div class="form-group">
+                  <input type="number" v-model="newStock.price" class="form-input" min="1" placeholder="초기 가격" required>
+                </div>
+                <button type="submit" class="btn btn-primary">추가</button>
+              </form>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="buy-quantity">구매 수량</label>
-              <input 
-                type="number" 
-                id="buy-quantity" 
-                class="form-input" 
-                v-model="buyQuantity" 
-                min="1" 
-                :max="maxBuyableQuantity"
-                required
-              >
-            </div>
-            
-            <div class="modal-summary">
-              <div class="summary-item total-line">
-                <span class="summary-label">총 구매 금액</span>
-                <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}원</span>
+          </template>
+        </div>
+      </div>
+
+      <!-- 최근 거래 내역 카드 -->
+      <div class="card card-full">
+        <div class="card-header">
+          <h2 class="card-title">거래 내역</h2>
+          <router-link to="/history" class="view-all">전체보기</router-link>
+        </div>
+        <div class="card-body">
+          <div v-if="loading.history" class="empty-state">
+            <div class="empty-icon">🔄</div>
+            <div class="empty-text">로딩 중...</div>
+          </div>
+          <template v-else>
+            <div v-if="stockHistories.length === 0" class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-clock-history"></i>
               </div>
+              <h3 class="card-title">거래 내역이 없습니다</h3>
+              <p class="empty-description">첫 주식 거래를 시작해보세요</p>
+              <router-link to="/markets" class="btn btn-primary">주식 구매하기</router-link>
             </div>
-            
-            <div class="modal-actions">
-              <button type="button" class="btn btn-outline" @click="closeBuyModal">취소</button>
-              <button 
-                type="button" 
-                class="btn btn-primary" 
-                @click="buyStock"
-                :disabled="loading.transaction || !isValidQuantity"
-              >
-                <span v-if="loading.transaction">처리 중...</span>
-                <span v-else>구매 확정</span>
-              </button>
+            <ul v-else class="transaction-list">
+              <li v-for="(history, index) in stockHistories.slice(0, 5)" :key="index" class="transaction-item">
+                <div class="transaction-info">
+                  <div class="transaction-icon" :class="getTransactionIconClass(history.transactionType)">
+                    {{ history.transactionType === '매수' ? '↓' : '↑' }}
+                  </div>
+                  <div class="transaction-details">
+                    <div class="transaction-title">
+                      {{ history.stockName }}
+                      <span class="transaction-tag" :class="getTransactionTagClass(history.transactionType)">
+                        {{ history.transactionType }}
+                      </span>
+                    </div>
+                    <div class="transaction-date">
+                      {{ formatDateTime(history.timestamp) }} • {{ history.quantity }}주
+                    </div>
+                  </div>
+                </div>
+                <div class="transaction-amount" :class="getTransactionAmountClass(history.transactionType)">
+                  {{ getTransactionPrefix(history.transactionType) }}{{ formatMoney(history.totalAmount) }}원
+                </div>
+              </li>
+            </ul>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- 주식 구매 모달 -->
+    <div id="buy-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">주식 구매</h3>
+          <button type="button" class="modal-close" @click="closeBuyModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedStock" class="modal-summary">
+            <div class="summary-item">
+              <span class="summary-label">주식명</span>
+              <span class="summary-value">{{ selectedStock.stockName }}</span>
             </div>
+            <div class="summary-item">
+              <span class="summary-label">현재 가격</span>
+              <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}원</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="buy-quantity">구매 수량</label>
+            <input type="number" id="buy-quantity" class="form-input" v-model="buyQuantity" min="1"
+              :max="maxBuyableQuantity" required>
+          </div>
+
+          <div class="modal-summary">
+            <div class="summary-item total-line">
+              <span class="summary-label">총 구매 금액</span>
+              <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}원</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" @click="closeBuyModal">취소</button>
+            <button type="button" class="btn btn-primary" @click="buyStock"
+              :disabled="loading.transaction || !isValidQuantity">
+              <span v-if="loading.transaction">처리 중...</span>
+              <span v-else>구매 확정</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { ref, computed, onMounted } from 'vue';
-  import { useAuthStore } from '@/store/auth';
-  import { useStockStore } from '@/store/stocks';
-  import { formatNumber, formatDateTime, formatProfitRate } from '@/utils/format';
-  
-  export default {
-    name: 'Dashboard',
-    setup() {
-      const authStore = useAuthStore();
-      const stockStore = useStockStore();
-      
-      const selectedStock = ref(null);
-      const buyQuantity = ref(1);
-      const newStock = ref({
+  </div>
+</template>
+
+<script>
+import { ref, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/store/auth';
+import { useStockStore } from '@/store/stocks';
+import { formatNumber, formatDateTime, formatProfitRate } from '@/utils/format';
+
+export default {
+  name: 'Dashboard',
+  setup() {
+    const authStore = useAuthStore();
+    const stockStore = useStockStore();
+
+    const selectedStock = ref(null);
+    const buyQuantity = ref(1);
+    const newStock = ref({
+      name: '',
+      price: 1000,
+      description: ''
+    });
+
+    const money = computed(() => authStore.playerMoney);
+    const moneyFormatted = computed(() => formatNumber(money.value));
+
+    const stocks = computed(() => stockStore.stocks);
+    const playerStocks = computed(() => stockStore.playerStocks);
+    const stockHistories = computed(() => stockStore.stockHistories);
+    const loading = computed(() => stockStore.loading);
+
+    const totalInvestment = computed(() => {
+      return playerStocks.value.reduce((total, stock) => {
+        return total + (stock.stockPrice * stock.stockQuantity);
+      }, 0);
+    });
+
+    const totalAsset = computed(() => money.value + totalInvestment.value);
+    const totalAssetFormatted = computed(() => formatNumber(totalAsset.value));
+
+    const maxBuyableQuantity = computed(() => {
+      if (!selectedStock.value) return 0;
+      return Math.floor(money.value / selectedStock.value.stockPrice);
+    });
+
+    const isValidQuantity = computed(() => {
+      return buyQuantity.value > 0 && buyQuantity.value <= maxBuyableQuantity.value;
+    });
+
+    const isValidNewStock = computed(() => {
+      return newStock.value.name.trim() !== '' &&
+        newStock.value.price > 0;
+    });
+
+    const calculateTotalPrice = () => {
+      if (!selectedStock.value) return 0;
+      return selectedStock.value.stockPrice * buyQuantity.value;
+    };
+
+    const getProfitClass = (profitRate) => {
+      if (profitRate > 0) return 'price-up';
+      if (profitRate < 0) return 'price-down';
+      return '';
+    };
+
+    const getTransactionIconClass = (type) => {
+      return type === '매수' ? 'transaction-buy' : 'transaction-sell';
+    };
+
+    const getTransactionTagClass = (type) => {
+      return type === '매수' ? 'tag-buy' : 'tag-sell';
+    };
+
+    const getTransactionAmountClass = (type) => {
+      return type === '매수' ? 'transaction-amount-sell' : 'transaction-amount-buy';
+    };
+
+    const getTransactionPrefix = (type) => {
+      return type === '매수' ? '-' : '+';
+    };
+
+    const formatMoney = (value) => {
+      return formatNumber(value);
+    };
+
+    const openBuyModal = (stock) => {
+      selectedStock.value = stock;
+      buyQuantity.value = 1;
+      document.getElementById('buy-modal').style.display = 'flex';
+    };
+
+    const closeBuyModal = () => {
+      document.getElementById('buy-modal').style.display = 'none';
+      selectedStock.value = null;
+      buyQuantity.value = 1;
+    };
+
+    const openCreateStockModal = () => {
+      newStock.value = {
         name: '',
         price: 1000,
         description: ''
-      });
-      
-      const money = computed(() => authStore.playerMoney);
-      const moneyFormatted = computed(() => formatNumber(money.value));
-      
-      const stocks = computed(() => stockStore.stocks);
-      const playerStocks = computed(() => stockStore.playerStocks);
-      const stockHistories = computed(() => stockStore.stockHistories);
-      const loading = computed(() => stockStore.loading);
-      
-      const totalInvestment = computed(() => {
-        return playerStocks.value.reduce((total, stock) => {
-          return total + (stock.stockPrice * stock.stockQuantity);
-        }, 0);
-      });
-      
-      const totalAsset = computed(() => money.value + totalInvestment.value);
-      const totalAssetFormatted = computed(() => formatNumber(totalAsset.value));
-      
-      const maxBuyableQuantity = computed(() => {
-        if (!selectedStock.value) return 0;
-        return Math.floor(money.value / selectedStock.value.stockPrice);
-      });
-      
-      const isValidQuantity = computed(() => {
-        return buyQuantity.value > 0 && buyQuantity.value <= maxBuyableQuantity.value;
-      });
-      
-      const isValidNewStock = computed(() => {
-        return newStock.value.name.trim() !== '' && 
-               newStock.value.price > 0;
-      });
-      
-      const calculateTotalPrice = () => {
-        if (!selectedStock.value) return 0;
-        return selectedStock.value.stockPrice * buyQuantity.value;
       };
-      
-      const getProfitClass = (profitRate) => {
-        if (profitRate > 0) return 'price-up';
-        if (profitRate < 0) return 'price-down';
-        return '';
-      };
-      
-      const getTransactionIconClass = (type) => {
-        return type === '매수' ? 'transaction-buy' : 'transaction-sell';
-      };
-      
-      const getTransactionTagClass = (type) => {
-        return type === '매수' ? 'tag-buy' : 'tag-sell';
-      };
-      
-      const getTransactionAmountClass = (type) => {
-        return type === '매수' ? 'transaction-amount-sell' : 'transaction-amount-buy';
-      };
-      
-      const getTransactionPrefix = (type) => {
-        return type === '매수' ? '-' : '+';
-      };
-      
-      const formatMoney = (value) => {
-        return formatNumber(value);
-      };
-      
-      const openBuyModal = (stock) => {
-        selectedStock.value = stock;
-        buyQuantity.value = 1;
-        document.getElementById('buy-modal').style.display = 'flex';
-      };
-      
-      const closeBuyModal = () => {
-        document.getElementById('buy-modal').style.display = 'none';
-        selectedStock.value = null;
-        buyQuantity.value = 1;
-      };
-      
-      const openCreateStockModal = () => {
-        newStock.value = {
-          name: '',
-          price: 1000,
-          description: ''
-        };
-        // 모달 열기 로직 추가 필요
-      };
-      
-      const buyStock = async () => {
-        if (!selectedStock.value || !isValidQuantity.value) return;
-        
-        try {
-          const success = await stockStore.buyStock(
-            selectedStock.value.id,
-            buyQuantity.value
-          );
-          
-          if (success) {
-            closeBuyModal();
-            alert(`${selectedStock.value.stockName} ${buyQuantity.value}주를 성공적으로 구매했습니다.`);
-          }
-        } catch (error) {
-          console.error('주식 구매 실패:', error);
+      // 모달 열기 로직 추가 필요
+    };
+
+    const buyStock = async () => {
+      if (!selectedStock.value || !isValidQuantity.value) return;
+
+      const stockName = selectedStock.value.stockName;
+
+      try {
+        const success = await stockStore.buyStock(
+          selectedStock.value.id,
+          buyQuantity.value
+        );
+
+        if (success) {
+          closeBuyModal();
+          alert(`${stockName} ${buyQuantity.value}주를 성공적으로 구매했습니다.`);
+        } else {
           alert('주식 구매에 실패했습니다.');
         }
-      };
-      
-      const createStock = async () => {
-        if (!isValidNewStock.value) return;
-        
-        try {
-          const success = await stockStore.createStock({
-            name: newStock.value.name,
-            price: newStock.value.price,
-            description: newStock.value.description
-          });
-          
-          if (success) {
-            // 모달 닫기 로직 추가 필요
-            alert(`${newStock.name.name} 주식이 성공적으로 등록되었습니다.`);
+      } catch (error) {
+        console.error('주식 구매 실패:', error);
+        alert('주식 구매 중 에러가 발생했습니다.');
+      }
+    };
+
+
+    const createStock = async () => {
+      if (!isValidNewStock.value) return;
+
+      try {
+        const success = await stockStore.createStock({
+          name: newStock.value.name,
+          price: newStock.value.price,
+          description: newStock.value.description
+        });
+
+        if (success) {
+          // 모달 닫기 로직 추가 필요
+          alert(`${newStock.name.name} 주식이 성공적으로 등록되었습니다.`);
         }
       } catch (error) {
         console.error('주식 생성 실패:', error);
         alert('주식 등록에 실패했습니다.');
       }
     };
-    
+
     const openSellModal = (stock) => {
       // 판매 모달 열기 로직 추가 필요
     };
-    
+
     const closeSellModal = () => {
       // 판매 모달 닫기 로직 추가 필요
     };
-    
+
     onMounted(async () => {
       try {
         await stockStore.fetchStocks();
@@ -370,7 +364,7 @@
         console.error('데이터 로딩 실패:', error);
       }
     });
-    
+
     return {
       stocks,
       playerStocks,
@@ -409,9 +403,7 @@
 </script>
 
 <style scoped>
-
-.content {
-}
+.content {}
 
 .balance-card {
   background: linear-gradient(45deg, #3182f6, #759beb);
@@ -824,15 +816,22 @@
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 992px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .card-full {
     grid-column: 1;
   }

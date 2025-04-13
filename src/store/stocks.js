@@ -80,13 +80,19 @@ export const useStockStore = defineStore('stocks', {
       this.loading.transaction = true;
       this.error = null;
       
+
       try {
-        await stocksApi.buyStock({
-          playerId: authStore.playerId,
-          stockId: stockId,
-          stockQuantity: quantity
-        });
-        
+      await stocksApi.buyStock({
+        playerId: authStore.playerId,
+        stockId: stockId,
+        stockQuantity: quantity
+      }).then((res) => {
+        console.log('매수 성공 응답:', res.data);
+      }).catch((err) => {
+        console.error('매수 실패:', err.response?.data || err.message);
+        throw err;
+      });
+
         // 보유 주식과 플레이어 정보 다시 불러오기
         await this.fetchPlayerStocks();
         await authStore.updatePlayerMoney();
