@@ -708,11 +708,11 @@ export default {
 }
 
 .transaction-amount-buy {
-  color: var(--success-green);
+  color: var(--text-color);
 }
 
 .transaction-amount-sell {
-  color: var(--danger-red);
+  color: var(--text-color);
 }
 
 .empty-state {

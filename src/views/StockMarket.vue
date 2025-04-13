@@ -210,7 +210,7 @@
                 <div class="mb-3">
                   <label for="stockPrice" class="form-label">초기 가격</label>
                   <div class="input-group">
-                    <span class="input-group-text">₩</span>
+                    <span class="input-group-text"></span>
                     <input
                       type="number"
                       class="form-control"

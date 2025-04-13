@@ -1,10 +1,10 @@
 /**
  * 숫자를 통화 형식으로 변환하는 함수
  * @param {number} value - 변환할 숫자
- * @param {string} currency - 통화 단위 (기본값: '₩')
+ * @param {string} currency - 통화 단위 (기본값: '')
  * @returns {string} 변환된 통화 문자열
  */
-export const formatNumber = (value, currency = '₩') => {
+export const formatNumber = (value, currency = '') => {
     if (value === null || value === undefined) return '-';
     
     return currency + value.toLocaleString('ko-KR');
