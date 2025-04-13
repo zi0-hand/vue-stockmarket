@@ -848,6 +848,7 @@ export default {
 
 .text-end {
   text-align: right;
+  color: var(--text-color-weak);
 }
 
 .btn-sm {
