@@ -276,27 +276,39 @@
               <div class="empty-icon"><i class="bi bi-clock-history"></i></div>
               <p>아직 가격 변동 이력이 없습니다.</p>
             </div>
-            <table v-else class="table">
-              <thead>
-                <tr>
-                  <th>날짜</th>
-                  <th class="text-end">가격</th>
-                  <th class="text-end">변동</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(history, index) in priceHistories" :key="history.id">
-                  <td>{{ formatDateTime(history.timestamp) }}</td>
-                  <td class="text-end">{{ formatMoney(history.price) }}</td>
-                  <td class="text-end">
-                    <span v-if="index < priceHistories.length - 1" :class="getPriceChangeClass(history, index)">
-                      {{ formatPriceChange(history, index) }}
-                    </span>
-                    <span v-else>-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div v-else>
+              <!-- 가격 그래프 추가 -->
+              <div class="price-chart-container">
+                <h6 class="chart-title">가격 변동 추이</h6>
+                <div class="chart-wrapper">
+                  <canvas ref="priceChartCanvas"></canvas>
+                </div>
+              </div>
+              
+              <!-- 가격 이력 테이블 -->
+              <h6 class="history-table-title">상세 이력</h6>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>날짜</th>
+                    <th class="text-end">가격</th>
+                    <th class="text-end">변동</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(history, index) in priceHistories" :key="history.id">
+                    <td>{{ formatDateTime(history.timestamp) }}</td>
+                    <td class="text-end">{{ formatMoney(history.price) }}</td>
+                    <td class="text-end">
+                      <span v-if="index < priceHistories.length - 1" :class="getPriceChangeClass(history, index)">
+                        {{ formatPriceChange(history, index) }}
+                      </span>
+                      <span v-else>-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" data-bs-dismiss="modal">닫기</button>
@@ -308,11 +320,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { useStockStore } from '@/store/stocks';
 import { formatNumber, formatDateTime } from '@/utils/format';
 import { Modal } from '@/utils/bootstrap';
+// Chart.js 불러오기
+import Chart from 'chart.js/auto';
 
 export default {
   name: 'StockMarket',
@@ -338,6 +352,10 @@ export default {
       description: ''
     });
     const priceHistories = ref([]);
+    
+    // 차트 캔버스 참조 추가
+    const priceChartCanvas = ref(null);
+    let priceChart = null; // 차트 인스턴스를 저장할 변수
     
     // 모달 인스턴스
     let buyModal = null;
@@ -480,6 +498,75 @@ export default {
       return selectedStock.value.stockPrice * buyQuantity.value;
     };
     
+    // 차트 생성 함수
+    const createPriceChart = () => {
+      if (priceChart) {
+        priceChart.destroy(); // 기존 차트가 있다면 제거
+      }
+      
+      if (!priceChartCanvas.value) return;
+      
+      // 차트 데이터 준비 (시간순으로 정렬)
+      const sortedHistories = [...priceHistories.value].sort((a, b) => 
+        new Date(a.timestamp) - new Date(b.timestamp)
+      );
+      
+      const labels = sortedHistories.map(history => 
+        new Date(history.timestamp).toLocaleDateString()
+      );
+      const data = sortedHistories.map(history => history.price);
+      
+      // 차트 색상 설정
+      const primaryColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--primary-blue') || '#3182f6';
+      
+      // 차트 생성
+      const ctx = priceChartCanvas.value.getContext('2d');
+      priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '주식 가격',
+            data: data,
+            borderColor: primaryColor,
+            backgroundColor: `${primaryColor}20`, // 20% 투명도
+            fill: true,
+            tension: 0.2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `가격: ${formatNumber(context.raw)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                callback: function(value) {
+                  return formatNumber(value);
+                }
+              }
+            }
+          }
+        }
+      });
+    };
+    
     // 모달 초기화 함수
     const initModals = () => {
       // 구매 모달 초기화
@@ -514,6 +601,10 @@ export default {
         
         modalElement.addEventListener('hidden.bs.modal', () => {
           priceHistories.value = [];
+          if (priceChart) {
+            priceChart.destroy();
+            priceChart = null;
+          }
         });
       }
     };
@@ -545,6 +636,13 @@ export default {
         const response = await stockStore.fetchStockPriceHistories(stock.id);
         priceHistories.value = response || [];
         historyModal.show();
+        
+        // 데이터가 로드된 후 차트 생성
+        if (priceHistories.value.length > 0) {
+          nextTick(() => {
+            createPriceChart();
+          });
+        }
       } catch (error) {
         console.error('가격 이력 조회 실패:', error);
         alert('가격 이력을 불러오는데 실패했습니다.');
@@ -638,6 +736,7 @@ export default {
       isValidNewStock,
       priceHistories,
       playerMoney,
+      priceChartCanvas, // 차트 캔버스 참조 추가
       formatStockId,
       formatMoney,
       formatDateTime,
@@ -655,6 +754,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .stock-market {
@@ -804,6 +904,12 @@ export default {
   color: var(--secondary-text, #718096);
 }
 
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+
 /* 빈 상태 */
 .empty-state {
   text-align: center;
@@ -842,6 +948,27 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 30px;
+}
+
+/* 차트 스타일 추가 */
+.price-chart-container {
+  margin-bottom: 24px;
+}
+
+.chart-title, .history-table-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-color);
+}
+
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  background-color: var(--background-gray, #f7fafc);
+  padding: 16px;
 }
 
 /* 모달 스타일 */
@@ -901,6 +1028,36 @@ export default {
   padding-top: 12px;
 }
 
+/* 이력 테이블 */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  color: var(--secondary-text, #718096);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+}
+
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.text-end {
+  text-align: right;
+}
+
+.price-up {
+  color: var(--danger-red, #e53e3e);
+}
+
+.price-down {
+  color: var(--primary-blue, #3182f6);
+}
+
 /* 버튼 스타일 */
 .btn {
   border-radius: 8px;
@@ -935,32 +1092,6 @@ export default {
 
 .btn-outline-primary:hover {
   background-color: rgba(49, 130, 246, 0.08);
-}
-
-/* 이력 테이블 */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th {
-  color: var(--secondary-text, #718096);
-  font-weight: 600;
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--border-color, #e2e8f0);
-}
-
-.table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
-}
-
-.price-up {
-  color: var(--danger-red, #e53e3e);
-}
-
-.price-down {
-  color: var(--primary-blue, #3182f6);
 }
 
 /* 애니메이션 */
