@@ -42,7 +42,7 @@
                   </div>
                 </div>
                 <div class="stock-actions">
-                  <button class="btn btn-sm btn-primary" @click="openSellModal(stock)">판매</button>
+                  <button class="btn btn-sm btn-success" @click="openSellModal(stock)">판매</button>
                 </div>
               </li>
             </ul>
@@ -887,6 +887,30 @@ export default {
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
 }
+
+.btn-success {
+    background-color: var(--success-green);
+    color: var(--white);
+  }
+
+  .btn-success:hover {
+    background-color: #1aad7f;
+    /* 약간 더 어두운 초록색 */
+  }
+
+  /* 버튼 크기를 더 작게 조정 */
+  .btn-sm {
+    padding: 5px 15px;
+    /* 기존 6px 12px에서 감소 */
+    /* font-size: 12px; */
+    /* 기존 13px에서 감소 */
+  }
+
+  /* 주식 아이템의 액션 버튼 간격 조정 */
+  .stock-actions {
+    margin-left: 12px;
+    /* 기존 16px에서 감소 */
+  }
 
 @keyframes modalFadeIn {
   from {
