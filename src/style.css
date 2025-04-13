@@ -11,7 +11,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+
+  --primary-blue: #3182f6;
+  --primary-light: rgba(49, 130, 246, 0.1);
+  --text-color: #333333;
+  --secondary-text: #8b8b8b;
+  --border-color: #eeeeee;
+  --background-gray: #f5f7fb;
+  --white: #ffffff;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
 
 a {
   font-weight: 500;
@@ -58,11 +69,14 @@ button:focus-visible {
   padding: 2em;
 }
 
+
 #app {
-  max-width: 1280px;
+  /* max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
+  text-align: center; */
+  height: 100%;
+  width: 100%;
 }
 
 @media (prefers-color-scheme: light) {
