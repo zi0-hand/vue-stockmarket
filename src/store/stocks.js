@@ -80,22 +80,22 @@ export const useStockStore = defineStore('stocks', {
       this.loading.transaction = true;
       this.error = null;
       
-
       try {
-      await stocksApi.buyStock({
-        playerId: authStore.playerId,
-        stockId: stockId,
-        stockQuantity: quantity
-      }).then((res) => {
-        console.log('매수 성공 응답:', res.data);
-      }).catch((err) => {
-        console.error('매수 실패:', err.response?.data || err.message);
-        throw err;
-      });
+        await stocksApi.buyStock({
+          playerId: authStore.playerId,
+          stockId: stockId,
+          stockQuantity: quantity
+        }).then((res) => {
+          console.log('매수 성공 응답:', res.data);
+        }).catch((err) => {
+          console.error('매수 실패:', err.response?.data || err.message);
+          throw err;
+        });
 
         // 보유 주식과 플레이어 정보 다시 불러오기
         await this.fetchPlayerStocks();
         await authStore.updatePlayerMoney();
+        await this.fetchStockHistories();
         
         return true;
       } catch (error) {
@@ -119,11 +119,17 @@ export const useStockStore = defineStore('stocks', {
           playerId: authStore.playerId,
           stockId: stockId,
           stockQuantity: quantity
+        }).then((res) => {
+          console.log('매도 성공 응답:', res.data);
+        }).catch((err) => {
+          console.error('매도 실패:', err.response?.data || err.message);
+          throw err;
         });
         
         // 보유 주식과 플레이어 정보 다시 불러오기
         await this.fetchPlayerStocks();
         await authStore.updatePlayerMoney();
+        await this.fetchStockHistories();
         
         return true;
       } catch (error) {

@@ -197,6 +197,54 @@
         </div>
       </div>
     </div>
+
+    <!-- 주식 판매 모달 -->
+    <div id="sell-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">주식 판매</h3>
+          <button type="button" class="modal-close" @click="closeSellModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedPlayerStock" class="modal-summary">
+            <div class="summary-item">
+              <span class="summary-label">주식명</span>
+              <span class="summary-value">{{ selectedPlayerStock.stockName }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">현재 가격</span>
+              <span class="summary-value">{{ formatMoney(selectedPlayerStock.stockPrice) }}원</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">보유 수량</span>
+              <span class="summary-value">{{ selectedPlayerStock.stockQuantity }}주</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sell-quantity">판매 수량</label>
+            <input type="number" id="sell-quantity" class="form-input" v-model="sellQuantity" min="1"
+              :max="selectedPlayerStock ? selectedPlayerStock.stockQuantity : 0" required>
+          </div>
+
+          <div class="modal-summary">
+            <div class="summary-item total-line">
+              <span class="summary-label">총 판매 금액</span>
+              <span class="summary-value">{{ formatMoney(calculateTotalSellPrice()) }}원</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" @click="closeSellModal">취소</button>
+            <button type="button" class="btn btn-primary" @click="sellStock"
+              :disabled="loading.transaction || !isValidSellQuantity">
+              <span v-if="loading.transaction">처리 중...</span>
+              <span v-else>판매 확정</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -213,7 +261,9 @@ export default {
     const stockStore = useStockStore();
 
     const selectedStock = ref(null);
+    const selectedPlayerStock = ref(null);
     const buyQuantity = ref(1);
+    const sellQuantity = ref(1);
     const newStock = ref({
       name: '',
       price: 1000,
@@ -246,6 +296,12 @@ export default {
       return buyQuantity.value > 0 && buyQuantity.value <= maxBuyableQuantity.value;
     });
 
+    const isValidSellQuantity = computed(() => {
+      return sellQuantity.value > 0 && 
+             selectedPlayerStock.value && 
+             sellQuantity.value <= selectedPlayerStock.value.stockQuantity;
+    });
+
     const isValidNewStock = computed(() => {
       return newStock.value.name.trim() !== '' &&
         newStock.value.price > 0;
@@ -254,6 +310,11 @@ export default {
     const calculateTotalPrice = () => {
       if (!selectedStock.value) return 0;
       return selectedStock.value.stockPrice * buyQuantity.value;
+    };
+
+    const calculateTotalSellPrice = () => {
+      if (!selectedPlayerStock.value) return 0;
+      return selectedPlayerStock.value.stockPrice * sellQuantity.value;
     };
 
     const getProfitClass = (profitRate) => {
@@ -294,6 +355,18 @@ export default {
       buyQuantity.value = 1;
     };
 
+    const openSellModal = (stock) => {
+      selectedPlayerStock.value = stock;
+      sellQuantity.value = 1;
+      document.getElementById('sell-modal').style.display = 'flex';
+    };
+
+    const closeSellModal = () => {
+      document.getElementById('sell-modal').style.display = 'none';
+      selectedPlayerStock.value = null;
+      sellQuantity.value = 1;
+    };
+
     const openCreateStockModal = () => {
       newStock.value = {
         name: '',
@@ -326,6 +399,28 @@ export default {
       }
     };
 
+    const sellStock = async () => {
+      if (!selectedPlayerStock.value || !isValidSellQuantity.value) return;
+
+      const stockName = selectedPlayerStock.value.stockName;
+
+      try {
+        const success = await stockStore.sellStock(
+          selectedPlayerStock.value.stockId,
+          sellQuantity.value
+        );
+
+        if (success) {
+          closeSellModal();
+          alert(`${stockName} ${sellQuantity.value}주를 성공적으로 판매했습니다.`);
+        } else {
+          alert('주식 판매에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('주식 판매 실패:', error);
+        alert('주식 판매 중 에러가 발생했습니다.');
+      }
+    };
 
     const createStock = async () => {
       if (!isValidNewStock.value) return;
@@ -338,21 +433,17 @@ export default {
         });
 
         if (success) {
-          // 모달 닫기 로직 추가 필요
-          alert(`${newStock.name.name} 주식이 성공적으로 등록되었습니다.`);
+          newStock.value = {
+            name: '',
+            price: 1000,
+            description: ''
+          };
+          alert(`${newStock.value.name} 주식이 성공적으로 등록되었습니다.`);
         }
       } catch (error) {
         console.error('주식 생성 실패:', error);
         alert('주식 등록에 실패했습니다.');
       }
-    };
-
-    const openSellModal = (stock) => {
-      // 판매 모달 열기 로직 추가 필요
-    };
-
-    const closeSellModal = () => {
-      // 판매 모달 닫기 로직 추가 필요
     };
 
     onMounted(async () => {
@@ -376,15 +467,19 @@ export default {
       totalAsset,
       totalAssetFormatted,
       selectedStock,
+      selectedPlayerStock,
       buyQuantity,
+      sellQuantity,
       maxBuyableQuantity,
       isValidQuantity,
+      isValidSellQuantity,
       newStock,
       isValidNewStock,
       formatMoney,
       formatProfitRate,
       formatDateTime,
       calculateTotalPrice,
+      calculateTotalSellPrice,
       getProfitClass,
       getTransactionIconClass,
       getTransactionTagClass,
@@ -392,15 +487,17 @@ export default {
       getTransactionPrefix,
       openBuyModal,
       closeBuyModal,
-      openCreateStockModal,
       openSellModal,
       closeSellModal,
+      openCreateStockModal,
       buyStock,
+      sellStock,
       createStock
     };
   }
 }
 </script>
+
 
 <style scoped>
 .content {}
