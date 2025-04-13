@@ -98,7 +98,8 @@
   
   <style scoped>
   .sidebar {
-    width: 280px;
+    /* width: 280px; */
+    width: 20%;
     min-height: 100vh;
     background-color: white;
     border-right: 1px solid var(--border-color);
