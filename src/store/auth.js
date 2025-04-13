@@ -24,12 +24,20 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authApi.login({ nickname, password });
 
-        // 로그인 성공 시 플레이어 정보 조회
-        const playerDetailResponse = await authApi.getPlayerDetail(response.data.id);
-        this.player = playerDetailResponse.data;
-        
-        // 로컬 스토리지에 저장
+        // 로그인 성공 시 기본 사용자 정보만 저장
+        this.player = {
+            nickname: nickname,
+            // 필요한 최소한의 정보만 저장
+        };
         localStorage.setItem('player', JSON.stringify(this.player));
+
+
+        // // 로그인 성공 시 플레이어 정보 조회
+        // const playerDetailResponse = await authApi.getPlayerDetail(response.data.id);
+        // this.player = playerDetailResponse.data;
+        
+        // // 로컬 스토리지에 저장
+        // localStorage.setItem('player', JSON.stringify(this.player));
         
         router.push('/dashboard');
         return true;
