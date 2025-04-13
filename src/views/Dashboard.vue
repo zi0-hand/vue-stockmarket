@@ -90,6 +90,7 @@
         </div>
       </div>
 
+
       <!-- 최근 거래 내역 카드 -->
       <div class="card card-full">
         <div class="card-header">
@@ -110,21 +111,24 @@
               <p class="empty-description">첫 주식 거래를 시작해보세요</p>
               <router-link to="/markets" class="btn btn-primary">주식 구매하기</router-link>
             </div>
+
             <ul v-else class="transaction-list">
               <li v-for="(history, index) in stockHistories.slice(0, 5)" :key="index" class="transaction-item">
                 <div class="transaction-info">
-                  <div class="transaction-icon" :class="getTransactionIconClass(history.transactionType)">
-                    {{ history.transactionType === '매수' ? '↓' : '↑' }}
-                  </div>
-                  <div class="transaction-details">
-                    <div class="transaction-title">
-                      {{ history.stockName }}
-                      <span class="transaction-tag" :class="getTransactionTagClass(history.transactionType)">
-                        {{ history.transactionType }}
-                      </span>
+                  <div class="transaction-content">
+                    <div class="transaction-icon" :class="getTransactionIconClass(history.transactionType)">
+                      {{ history.transactionType === '매수' ? '↓' : '↑' }}
                     </div>
-                    <div class="transaction-date">
-                      {{ formatDateTime(history.timestamp) }} • {{ history.quantity }}주
+                    <div class="transaction-details">
+                      <div class="transaction-title">
+                        {{ history.stockName }}
+                        <span class="transaction-tag" :class="getTransactionTagClass(history.transactionType)">
+                          {{ history.transactionType }}
+                        </span>
+                      </div>
+                      <div class="transaction-date">
+                        {{ formatDateTime(history.timestamp) }} • {{ history.quantity }}주
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -136,101 +140,104 @@
           </template>
         </div>
       </div>
-    </div>
 
-    <!-- 주식 구매 모달 -->
-    <div id="buy-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">주식 구매</h3>
-          <button type="button" class="modal-close" @click="closeBuyModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div v-if="selectedStock" class="modal-summary">
-            <div class="summary-item">
-              <span class="summary-label">주식명</span>
-              <span class="summary-value">{{ selectedStock.stockName }}</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">현재 가격</span>
-              <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}원</span>
-            </div>
+
+      <!-- 주식 구매 모달 -->
+      <div id="buy-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">주식 구매</h3>
+            <button type="button" class="modal-close" @click="closeBuyModal">&times;</button>
           </div>
-
-          <div class="form-group">
-            <label class="form-label" for="buy-quantity">구매 수량</label>
-            <input type="number" id="buy-quantity" class="form-input" v-model="buyQuantity" min="1"
-              :max="maxBuyableQuantity" required>
-          </div>
-
-          <div class="modal-summary">
-            <div class="summary-item total-line">
-              <span class="summary-label">총 구매 금액</span>
-              <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}원</span>
+          <div class="modal-body">
+            <div v-if="selectedStock" class="modal-summary">
+              <div class="summary-item">
+                <span class="summary-label">주식명</span>
+                <span class="summary-value">{{ selectedStock.stockName }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">현재 가격</span>
+                <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}원</span>
+              </div>
             </div>
-          </div>
 
-          <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="closeBuyModal">취소</button>
-            <button type="button" class="btn btn-primary" @click="buyStock"
-              :disabled="loading.transaction || !isValidQuantity">
-              <span v-if="loading.transaction">처리 중...</span>
-              <span v-else>구매 확정</span>
-            </button>
+            <div class="form-group">
+              <label class="form-label" for="buy-quantity">구매 수량</label>
+              <input type="number" id="buy-quantity" class="form-input" v-model="buyQuantity" min="1"
+                :max="maxBuyableQuantity" required>
+            </div>
+
+            <div class="modal-summary">
+              <div class="summary-item total-line">
+                <span class="summary-label">총 구매 금액</span>
+                <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}원</span>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-outline" @click="closeBuyModal">취소</button>
+              <button type="button" class="btn btn-primary" @click="buyStock"
+                :disabled="loading.transaction || !isValidQuantity">
+                <span v-if="loading.transaction">처리 중...</span>
+                <span v-else>구매 확정</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 주식 판매 모달 -->
-    <div id="sell-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">주식 판매</h3>
-          <button type="button" class="modal-close" @click="closeSellModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div v-if="selectedPlayerStock" class="modal-summary">
-            <div class="summary-item">
-              <span class="summary-label">주식명</span>
-              <span class="summary-value">{{ selectedPlayerStock.stockName }}</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">현재 가격</span>
-              <span class="summary-value">{{ formatMoney(selectedPlayerStock.stockPrice) }}원</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">보유 수량</span>
-              <span class="summary-value">{{ selectedPlayerStock.stockQuantity }}주</span>
-            </div>
+      <!-- 주식 판매 모달 -->
+      <div id="sell-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">주식 판매</h3>
+            <button type="button" class="modal-close" @click="closeSellModal">&times;</button>
           </div>
-
-          <div class="form-group">
-            <label class="form-label" for="sell-quantity">판매 수량</label>
-            <input type="number" id="sell-quantity" class="form-input" v-model="sellQuantity" min="1"
-              :max="selectedPlayerStock ? selectedPlayerStock.stockQuantity : 0" required>
-          </div>
-
-          <div class="modal-summary">
-            <div class="summary-item total-line">
-              <span class="summary-label">총 판매 금액</span>
-              <span class="summary-value">{{ formatMoney(calculateTotalSellPrice()) }}원</span>
+          <div class="modal-body">
+            <div v-if="selectedPlayerStock" class="modal-summary">
+              <div class="summary-item">
+                <span class="summary-label">주식명</span>
+                <span class="summary-value">{{ selectedPlayerStock.stockName }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">현재 가격</span>
+                <span class="summary-value">{{ formatMoney(selectedPlayerStock.stockPrice) }}원</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">보유 수량</span>
+                <span class="summary-value">{{ selectedPlayerStock.stockQuantity }}주</span>
+              </div>
             </div>
-          </div>
 
-          <div class="modal-actions">
-            <button type="button" class="btn btn-outline" @click="closeSellModal">취소</button>
-            <button type="button" class="btn btn-primary" @click="sellStock"
-              :disabled="loading.transaction || !isValidSellQuantity">
-              <span v-if="loading.transaction">처리 중...</span>
-              <span v-else>판매 확정</span>
-            </button>
+            <div class="form-group">
+              <label class="form-label" for="sell-quantity">판매 수량</label>
+              <input type="number" id="sell-quantity" class="form-input" v-model="sellQuantity" min="1"
+                :max="selectedPlayerStock ? selectedPlayerStock.stockQuantity : 0" required>
+            </div>
+
+            <div class="modal-summary">
+              <div class="summary-item total-line">
+                <span class="summary-label">총 판매 금액</span>
+                <span class="summary-value">{{ formatMoney(calculateTotalSellPrice()) }}원</span>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-outline" @click="closeSellModal">취소</button>
+              <button type="button" class="btn btn-primary" @click="sellStock"
+                :disabled="loading.transaction || !isValidSellQuantity">
+                <span v-if="loading.transaction">처리 중...</span>
+                <span v-else>판매 확정</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+
 
 <script>
 import { ref, computed, onMounted } from 'vue';
@@ -281,9 +288,9 @@ export default {
     });
 
     const isValidSellQuantity = computed(() => {
-      return sellQuantity.value > 0 && 
-             selectedPlayerStock.value && 
-             sellQuantity.value <= selectedPlayerStock.value.stockQuantity;
+      return sellQuantity.value > 0 &&
+        selectedPlayerStock.value &&
+        sellQuantity.value <= selectedPlayerStock.value.stockQuantity;
     });
 
     const isValidNewStock = computed(() => {
@@ -644,6 +651,16 @@ export default {
 
 .transaction-item:last-child {
   border-bottom: none;
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .transaction-icon {
