@@ -249,6 +249,7 @@
     color: var(--text-color);
     cursor: pointer;
     border-radius: 0.5rem;
+    margin: 0 0.5rem;
   }
   
   .logout-btn:hover {
