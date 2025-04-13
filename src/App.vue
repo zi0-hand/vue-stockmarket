@@ -21,8 +21,8 @@
 <script>
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/store/auth';
-import Sidebar from '@/components/common/Sidebar.vue';
-import Navbar from '@/components/common/Navbar.vue';
+import Sidebar from '@/components/Sidebar.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
   name: 'App',
