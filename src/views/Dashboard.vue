@@ -2,7 +2,7 @@
   <div class="content">
     <div class="balance-card">
       <div class="balance-label">총 보유자산</div>
-      <div class="balance-amount" id="player-money">{{ totalAssetFormatted }}원</div>
+      <div class="balance-amount" id="player-money">{{ totalAssetFormatted }}</div>
     </div>
 
     <div class="content-grid">
@@ -36,7 +36,7 @@
                   </div>
                 </div>
                 <div class="stock-price">
-                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice * stock.stockQuantity) }}원</div>
+                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice * stock.stockQuantity) }}</div>
                   <div class="stock-change" :class="getProfitClass(stock.profitRate)">
                     {{ formatProfitRate(stock.profitRate) }}
                   </div>
@@ -79,7 +79,7 @@
                   </div>
                 </div>
                 <div class="stock-price">
-                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice) }}원</div>
+                  <div class="stock-price-value">{{ formatMoney(stock.stockPrice) }}</div>
                 </div>
                 <div class="stock-actions">
                   <button class="btn btn-sm btn-primary" @click="openBuyModal(stock)">구매</button>
@@ -133,7 +133,7 @@
                   </div>
                 </div>
                 <div class="transaction-amount" :class="getTransactionAmountClass(history.transactionType)">
-                  {{ getTransactionPrefix(history.transactionType) }}{{ formatMoney(history.totalAmount) }}원
+                  {{ getTransactionPrefix(history.transactionType) }}{{ formatMoney(history.totalAmount) }}
                 </div>
               </li>
             </ul>
@@ -157,7 +157,7 @@
               </div>
               <div class="summary-item">
                 <span class="summary-label">현재 가격</span>
-                <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}원</span>
+                <span class="summary-value">{{ formatMoney(selectedStock.stockPrice) }}</span>
               </div>
             </div>
 
@@ -170,7 +170,7 @@
             <div class="modal-summary">
               <div class="summary-item total-line">
                 <span class="summary-label">총 구매 금액</span>
-                <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}원</span>
+                <span class="summary-value">{{ formatMoney(calculateTotalPrice()) }}</span>
               </div>
             </div>
 
@@ -201,7 +201,7 @@
               </div>
               <div class="summary-item">
                 <span class="summary-label">현재 가격</span>
-                <span class="summary-value">{{ formatMoney(selectedPlayerStock.stockPrice) }}원</span>
+                <span class="summary-value">{{ formatMoney(selectedPlayerStock.stockPrice) }}</span>
               </div>
               <div class="summary-item">
                 <span class="summary-label">보유 수량</span>
@@ -218,7 +218,7 @@
             <div class="modal-summary">
               <div class="summary-item total-line">
                 <span class="summary-label">총 판매 금액</span>
-                <span class="summary-value">{{ formatMoney(calculateTotalSellPrice()) }}원</span>
+                <span class="summary-value">{{ formatMoney(calculateTotalSellPrice()) }}</span>
               </div>
             </div>
 

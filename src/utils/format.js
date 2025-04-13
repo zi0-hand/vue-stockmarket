@@ -4,10 +4,10 @@
  * @param {string} currency - 통화 단위 (기본값: '')
  * @returns {string} 변환된 통화 문자열
  */
-export const formatNumber = (value, currency = '') => {
+export const formatNumber = (value, currency = '원') => {
     if (value === null || value === undefined) return '-';
     
-    return currency + value.toLocaleString('ko-KR');
+    return value.toLocaleString('ko-KR') + currency;
   };
   
   /**
