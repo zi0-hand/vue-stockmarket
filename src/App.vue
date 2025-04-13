@@ -31,10 +31,9 @@ export default {
     Navbar
   },
   setup() {
-    const authStore = useAuthStore();
     
     onMounted(() => {
-      // 페이지 로드 시 로컬 스토리지에서 사용자 정보 불러오기
+      const authStore = useAuthStore();
       authStore.loadPlayerFromStorage();
     });
     
