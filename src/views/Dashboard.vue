@@ -519,7 +519,7 @@ export default {
 .card {
   background-color: var(--white);
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
