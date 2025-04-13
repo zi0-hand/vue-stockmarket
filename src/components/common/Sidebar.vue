@@ -31,7 +31,8 @@
           </ul>
         </div>
       </nav>
-      
+
+      <div class="nav-title" v-if="!isCollapsed">관리</div>
       <button class="logout-btn" @click="logout">
         <span class="nav-icon"><i class="bi bi-box-arrow-right"></i></span>
         <span v-if="!isCollapsed">로그아웃</span>
@@ -243,7 +244,6 @@
     display: flex;
     align-items: center;
     padding: 0.75rem 1.5rem;
-    margin: 1rem 0.5rem;
     background: none;
     border: none;
     color: var(--text-color);
