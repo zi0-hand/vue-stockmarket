@@ -1,3 +1,7 @@
+// api/history.js
+/**
+ * 거래 내역 및 포트폴리오 분석 관련 API 호출을 담당하는 모듈
+ */
 import apiClient from './index';
 
 export const historyApi = {
@@ -19,3 +23,5 @@ export const historyApi = {
     return apiClient.get(`/players/${playerId}/portfolio/analysis`);
   }
 };
+
+export default historyApi;

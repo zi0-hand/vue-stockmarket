@@ -1,3 +1,8 @@
+// api/stocks.js
+/**
+ * 주식 관련 API 호출을 담당하는 모듈
+ * 주식 목록 조회, 거래, 가격 변경 등의 API 엔드포인트 제공
+ */
 import apiClient from './index';
 
 export const stocksApi = {
@@ -73,3 +78,5 @@ export const stocksApi = {
     return apiClient.put('/players/player-stocks', sellData);
   }
 };
+
+export default stocksApi;

@@ -45,29 +45,46 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터
 apiClient.interceptors.response.use(
   response => {
-    // 성공적인 응답 처리
     return response;
   },
   error => {
-    // 인증 오류 (401) 처리
-    if (error.response && error.response.status === 401) {
-      console.warn('인증이 만료되었습니다. 다시 로그인해주세요.');
-      // 세션 스토리지에서 인증 정보 제거
-      sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem('player_data');
-      
-      // 로그인 페이지로 리다이렉트
-      window.location.href = '/login';
+    // 요청 취소 에러는 따로 처리
+    if (axios.isCancel(error)) {
+      console.log('요청이 취소되었습니다.');
+      return Promise.reject(error);
     }
     
-    // 서버 오류 (500) 처리
-    else if (error.response && error.response.status >= 500) {
-      console.error('서버 오류가 발생했습니다:', error.response.status);
+    // 네트워크 에러 처리
+    if (!error.response) {
+      console.error('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+      return Promise.reject(new Error('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'));
     }
     
-    // 기타 오류 처리
-    else {
-      console.error('API 요청 실패:', error.message);
+    // 오류 상태코드별 처리
+    switch (error.response.status) {
+      case 400:
+        console.error('잘못된 요청입니다:', error.response.data?.message || '요청 데이터를 확인해주세요.');
+        break;
+      case 401:
+        console.warn('인증이 만료되었습니다. 다시 로그인해주세요.');
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('player_data');
+        window.location.href = '/login';
+        break;
+      case 403:
+        console.error('접근 권한이 없습니다.');
+        break;
+      case 404:
+        console.error('요청한 리소스를 찾을 수 없습니다.');
+        break;
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        console.error('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        break;
+      default:
+        console.error(`API 오류 (${error.response.status}):`, error.response.data?.message || error.message);
     }
     
     return Promise.reject(error);
