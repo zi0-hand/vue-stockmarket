@@ -20,17 +20,15 @@
       </div>
     </div>
     
-    <div class="search-filter-container">
-      <div class="search-bar">
-        <div class="input-group">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="주식명 검색"
-            v-model="searchTerm"
-          >
-        </div>
+    <div class="filter-bar">
+      <div class="search-input">
+        <i class="bi bi-search search-icon"></i>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="주식명 검색"
+          v-model="searchTerm"
+        >
       </div>
       
       <div class="filter-options">
@@ -779,18 +777,59 @@ export default {
   gap: 10px;
 }
 
-.search-filter-container {
+
+/* 필터 바 스타일 */
+.filter-bar {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
-.search-bar {
-  flex: 1;
+.search-input {
+  position: relative;
+  flex-grow: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 14px;
+  background-color: var(--white);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
 }
 
 .filter-options {
   width: 150px;
+}
+
+.form-select {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 14px;
+  background-color: var(--white);
+  width: 100%;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
 }
 
 /* 주식 목록 그리드 레이아웃 */
@@ -1099,6 +1138,7 @@ export default {
   animation: rotate 1s linear infinite;
 }
 
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -1123,5 +1163,7 @@ export default {
   .stocks-grid {
     grid-template-columns: 1fr;
   }
+
+  
 }
 </style>
